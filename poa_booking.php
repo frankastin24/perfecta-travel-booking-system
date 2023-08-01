@@ -34,9 +34,14 @@ class POA_Booking
 
             array_push($this->months_containing_startdates[intval($month)], $start_date);
         }
+
         ksort($this->months_containing_startdates);
+
+        $this->generate_script();
         $this->generate_styles();
+
         echo  $this->generate_calendar_html();
+
         exit;
     }
 
@@ -59,33 +64,43 @@ class POA_Booking
 
         $month_html = '<div class="month"><header>' . $monthName . '</header><div class="day-names"><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div></div><div class="days">';
 
+
+        $prev_month_num_days = cal_days_in_month(CAL_GREGORIAN, intval($month) - 1, 2023);
+
         $num_days = cal_days_in_month(CAL_GREGORIAN, $month, 2023);
+
+        $lastDayPrevMonthObj = DateTime::createFromFormat('Y-m-d', '2023-' . strval(intval($month) - 1) . '-' . $prev_month_num_days);
+
         $firstDayDateObj  = DateTime::createFromFormat('Y-m-d', '2023-' . $month . '-01');
 
-        $number_of_additional_days = intval($firstDayDateObj->format('w')) - 1;
+        $lastDayDateObj  = DateTime::createFromFormat('Y-m-d', '2023-' . $month . '-' . $num_days);
 
+        $number_of_additional_days =  (intval($firstDayDateObj->format('w')) == 0) ? 6 : intval($firstDayDateObj->format('w')) - 1;
 
+        $lastDayPrevMonth = intval($lastDayPrevMonthObj->format('d'));
+        $lastDayDate =  intval($lastDayDateObj->format('w'));
 
         for ($i = 0; $i < $number_of_additional_days; $i++) {
-            $month_html .= '<div class="day grey"></div>';
+            $month_html .= '<div class="day grey">' . $lastDayPrevMonth - ($number_of_additional_days - $i) . '</div>';
         }
 
-        $active_days = 0;
+
         for ($i = 0; $i < $num_days; $i++) {
             $dayDateObj  = DateTime::createFromFormat('Y-m-j', '2023-' . $month . '-' . $i);
 
             $daydate = $dayDateObj->format('Y-m-d');
+
             $active = false;
-            if ($active_days > 0) {
-                $active = true;
-                $active_days--;
-            }
+
             if (in_array($daydate, $dates)) {
                 $active = true;
-                $active_days = 6;
             }
 
-            $month_html .= '<div class="day ' . ($active ? 'active' : 'false') . '">' . $i . '</div>';
+            $month_html .= '<div class="day ' . ($active ? 'active' : 'false') . '">' . strval($i + 1) . '</div>';
+        }
+
+        for ($i = 0; $i < (7 - $lastDayDate); $i++) {
+            $month_html .= '<div class="day grey">' .  ($i + 1) . '</div>';
         }
 
         $month_html .= '</div></div>';
@@ -95,6 +110,7 @@ class POA_Booking
     public function generate_styles()
     {
 ?>
+
         <style>
             .month {
                 width: 300px;
@@ -136,6 +152,9 @@ class POA_Booking
             }
         </style>
 <?php
+    }
+    public function generate_script()
+    {
     }
 }
 
