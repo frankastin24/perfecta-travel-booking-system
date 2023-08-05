@@ -1,0 +1,343 @@
+*,
+ul,
+li,
+div {
+  font-family: "Mulish";
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+.poa-booking {
+  width: 1000px;
+}
+
+.fields:after {
+  content: "";
+  clear: both;
+  display: block;
+}
+
+.poa-booking-calendar {
+  min-width: 200px;
+  max-width: 380px;
+  float: left;
+  margin-right: 10px;
+  width: calc(33.3333% - 10px);
+  border: 1px solid #f1f1f1;
+  background: #fff;
+  margin-top: 20px;
+}
+
+.poa-booking-calendar .calendar-body {
+  padding: 0px 10px;
+  padding-bottom: 40px;
+}
+
+.poa-booking-calendar .calendar-body:after,
+.calendar-container:after {
+  display: block;
+  content: "";
+  clear: both;
+}
+
+.month {
+  width: 300px;
+  float: left;
+  margin-right: 20px;
+  border: 1px solid #ccc;
+}
+
+.poa-booking-calendar select {
+  width: calc(100% - 100px);
+  margin-left: 7px;
+
+  background: #fff;
+  height: 26px;
+  line-height: 26px;
+  padding: 0 10px !important;
+  vertical-align: top;
+  font-size: 13px;
+  -webkit-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+  border: 1px solid #bdc3c7;
+  color: #979797;
+}
+
+header {
+  width: 100%;
+  background: #fff;
+  height: 41px;
+  line-height: 26px;
+  margin: 0;
+  padding: 7px 0px !important;
+  vertical-align: top;
+  font-size: 13px;
+  -webkit-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+
+  text-align: center;
+  padding: 8px;
+  background: #f5f5f5;
+  position: relative;
+}
+
+header button {
+  position: absolute;
+  display: block;
+  top: 22px;
+  height: 26px;
+  width: 26px;
+  line-height: 26px;
+  margin-top: -13px;
+  text-decoration: none;
+  border: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  color: #fff;
+  background: #bdc3c7 !important;
+  border-radius: 2px;
+  left: 6px;
+  cursor: pointer;
+  padding: 0px;
+}
+
+header button.next {
+  right: 6px;
+  left: auto;
+}
+
+header button.prev div {
+  left: 10px;
+  margin-left: -4px;
+  border-width: 5px 8.7px 5px 0;
+  border-color: transparent #fff transparent transparent;
+  position: absolute;
+  height: 12px;
+  width: 10px;
+  border-style: solid;
+  top: 6px;
+}
+
+header button.next div {
+  right: 25px;
+  margin-right: -34px;
+  border-width: 5px 0 5px 8.7px;
+  border-color: transparent transparent transparent #fff;
+  position: absolute;
+  top: 6px;
+  z-index: 10;
+  height: 12px;
+  width: 26px;
+  /* height: 100%; */
+  border-style: solid;
+}
+
+.day-name {
+  width: 14.28%;
+  font-weight: bold;
+}
+
+.day {
+  width: 14.28%;
+  float: left;
+  text-align: center;
+  height: 39px;
+  padding: 13px 0px;
+  font-size: 13px;
+  border: 1px solid #fff;
+}
+
+.day.grey {
+  background: #f7f7f7;
+}
+
+.day.false {
+  background: #ffc0bd;
+}
+
+.day.active {
+  background: #d3ffd0;
+  cursor: pointer;
+}
+
+.day.hover {
+  background: #58a5d9;
+}
+
+.day.selected {
+  background: #3e596b;
+  color: #fff;
+  cursor: pointer;
+}
+.fields > div {
+  margin-bottom: 10px;
+}
+
+.fields > div:nth-child(even) {
+  float: right;
+}
+label {
+  font-weight: bold;
+  font-size: 15px;
+  width: 100%;
+  display: block;
+  color: #010101;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+.input p,
+.select p {
+  display: none;
+}
+.input,
+.select {
+  margin-top: 20px;
+  width: 49%;
+  float: left;
+  position: relative;
+  cursor: pointer;
+}
+
+.select button {
+  cursor: pointer;
+}
+
+.select span {
+  border: solid 5px transparent;
+  border-top: solid 5px #000;
+  float: right;
+  margin-top: 20px;
+  margin-right: 4px;
+  position: absolute;
+  top: 6px;
+  right: 4px;
+}
+
+.select.active span {
+  border: solid 5px transparent !important;
+  border-bottom: solid 5px #000 !important;
+  top: 1px;
+}
+
+ul {
+  background: #fff;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  display: none;
+}
+.active ul {
+  display: block;
+}
+li {
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+}
+li:hover,
+li.selected {
+  background: #ccc;
+}
+.woocommerce-input-wrapper {
+  height: 50px;
+  display: block;
+}
+
+.woocommerce .col2-set .col-1,
+.woocommerce-page .col2-set .col-1 {
+  width: 90% !important;
+}
+
+.select button,
+input[type="text"],
+.select2-selection__rendered,
+.input p {
+  width: 100% !important;
+  display: block !important;
+  width: 100% !important;
+  border: 1px solid #ccc !important;
+  background: #fff !important;
+  padding: 16px 8px !important;
+  outline: none !important;
+  background-color: #ffffff !important;
+  font-size: 17px !important;
+  color: #979797 !important;
+  position: relative !important;
+  display: flex !important;
+  height: 55px !important;
+  font-weight: 400 !important;
+
+  color: #979797;
+}
+
+.validation-error-message,
+.calendar-validation-error {
+  color: red;
+  font-weight: normal;
+  margin-top: 10px;
+  display: none;
+}
+
+#ws-payment-form input[type="submit"] {
+  position: absolute;
+  top: 1329px;
+  width: calc(50% - 293px);
+  left: calc(50% + 28px);
+}
+
+#place_order {
+  display: none;
+}
+
+.total {
+  padding: 30px 20px;
+  background: #f0f0f0;
+  margin-top: 20px;
+}
+
+.total h1 {
+  font-size: 30px;
+}
+
+input[type="submit"] {
+  display: inline-block;
+  padding: 15px 10px;
+  font-weight: 300;
+  text-transform: uppercase;
+  border: 2px solid #005f9d;
+  background-color: transparent;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #005f9d;
+  transition: all 0.4s ease-in-out;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background: #005f9d;
+  color: #fff;
+}
+
+.col-2 {
+  display: none;
+}
+
+.woocommerce .col2-set,
+.woocommerce-page .col2-set {
+  width: 50%;
+  float: left;
+}
+#order_review_heading {
+  width: 50%;
+  float: left;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#order_review {
+  float: left;
+  width: 34%;
+  margin-top: 22px;
+}

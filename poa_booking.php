@@ -3,7 +3,7 @@
 /**
  * Plugin Name: POA Booking
  * Plugin URI: https://www.frankastin.co.uk/poa-booking
- * Description: A custom booking system
+ * Description: A custom booking system for Pearls Of Adriatic
  * Version: 0.1
  * Author: Frank Astin
  * Author URI: https://www.frankastin.co.uk/
@@ -15,256 +15,191 @@
  *
  */
 
-class POA_Booking
+include plugin_dir_path(__FILE__) . '/bladeone.php';
+include plugin_dir_path(__FILE__) . '/traits/admin_menu.php';
+include plugin_dir_path(__FILE__) . '/traits/generate_data.php';
+include plugin_dir_path(__FILE__) . '/traits/ajax.php';
+include plugin_dir_path(__FILE__) . '/traits/shortcodes.php';
+
+use eftec\bladeone\BladeOne;
+
+class POA_Booking extends BladeOne
 {
+    use admin_menu;
+    use generate_data;
+    use ajax;
+    use shortcodes;
     public function __construct()
     {
-        $this->start_dates = get_option('WPAB_start_dates', []);
+        $this->plugin_dir = plugin_dir_path(__FILE__);
+        $this->plugin_dir_url = plugin_dir_url(__FILE__);
 
-        $this->start_dates =  ["2023-04-15", "2023-04-22", "2023-04-29", "2023-05-06", "2023-10-07", "2023-10-14", "2023-10-21", "2023-04-01", "2023-04-08", "2023-05-13", "2023-05-20", "2023-09-30", "2023-05-27", "2023-09-23", "2023-07-01", "2023-07-08", "2023-07-15", "2023-07-22", "2023-09-16", "2023-07-01", "2023-07-08", "2023-07-15", "2023-07-22", "2023-07-29", "2023-08-05", "2023-08-12", "2023-08-19", "2023-08-26", "2023-09-02", "2023-09-09"];
+        //Setup Blade Templating 
 
-        $this->months_containing_startdates = [];
+        $this->templatePath = [plugin_dir_path(__FILE__) . '/views'];
+        $this->compiledPath = plugin_dir_path(__FILE__) . '/cache';
 
-        foreach ($this->start_dates as $start_date) {
-            $month = explode('-', $start_date)[1];
-            if (!array_key_exists($month, $this->months_containing_startdates)) {
+        $this->setMode(0);
 
-                $this->months_containing_startdates[intval($month)] = array();
-            }
+        //Get Start dates
 
-            array_push($this->months_containing_startdates[intval($month)], $start_date);
-        }
+        $this->calendar_data = array();
 
-        ksort($this->months_containing_startdates);
+        $this->calendar_data['ajax_url'] = admin_url('admin-ajax.php');
 
+        $this->selects = $this->select_menus();
 
-
-
-        $this->calender_data = $this->generate_months_data();
         add_shortcode('poa_booking', array($this, 'shortcode'));
+
+        add_action('woocommerce_after_checkout_form', array($this, 'address_shortcode'));
+
+        add_shortcode('poa_order_complete', array($this, 'order_complete_shortcode'));
+
+        add_action('admin_menu', array($this, 'add_menu_page'));
+
+        add_action('wp_ajax_generate_wspay_signature', array($this, 'generate_wspay_signature'));
+
+        add_action('wp_ajax_nopriv_generate_wspay_signature', array($this, 'generate_wspay_signature'));
+
+        add_action('init', array($this, 'register_post_types'));
+        add_action('save_post', array($this, 'save_post'));
     }
 
-    public function generate_months_data()
+
+    public function save_post($post_id)
     {
-        $months = array();
-        foreach ($this->months_containing_startdates as $month => $dates) {
-            $months[]  = $this->generate_month_data($month, $dates);
+        $post = get_post($post_id);
+
+
+        if ($post->post_type == 'package' && isset($_POST['json_data'])) {
+            update_post_meta($post_id, 'start_dates', json_decode(stripslashes_deep($_POST['json_data'])));
         }
-        return $months;
     }
-    public function shortcode()
+
+    public function register_post_types()
     {
 
+        $supports = array(
+            'title', // post title
 
-        $data = json_encode($this->calender_data);
-
-        $this->generate_styles();
-        return <<<END
-            <div class='calendar'>
-            <header><select id="month-select"></select></header>
-            <div class="day-names"></div>
-            <div class="days"></div>
-            </div>
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-            <script>
-           
-            const calendar_data = $data;
-
-            let selectOptionsHTML =  '';
-            const populateSelect = (month,index) => {
-                
-                let optionsHTML = '';
-
-                calendar_data.forEach((month) => {
-                    optionsHTML += '<option value="'+month.name+'">'+month.name+'</option>';
-                });
-
-                $('#month-select').html(optionsHTML);
-              
-         
-            
-            }
-
-            
-            
-
-            const populateCalendar = (month,index) => {
-                
-                let daysHTML = '';
-
-                month.days.forEach((day) => {
-                    daysHTML += '<div class="day '+ day.class + '">'+day.number+'</div>';
-                });
-
-                $('.days').html(daysHTML);
-              
-             
-
-            
-            }
-
-
-
-
-            $(() => {
-                populateSelect();
-                populateCalendar(calendar_data[0],0);
-
-                $('#month-select').on('change', (e) => {
-                    const index = $(e.currentTarget).find(":selected").index();
-                    console.log(index);
-                    populateCalendar(calendar_data[index],index);
-                });
-                $('body').on('mouseover','.active', (e) => {
-                    const index = $(e.currentTarget).index();
-                    $(e.currentTarget).addClass('hover')
-                    const length = index + 6;
-                    for (let x = index; x < length; x ++) {
-                        $('.day').eq(x).addClass('hover');
-                    }
-                })
-                $('body').on('mouseout','.active', (e) => {
-                    $('.hover').removeClass('hover')
-                })
-                $('body').on('click','.active', (e) => {
-                    const index = $(e.currentTarget).index();
-                    const length = index + 6;
-                    if( $(e.currentTarget).hasClass('selected') ) {
-                        $(e.currentTarget).removeClass('selected')
-                        for (let x = index; x < length; x ++) {
-                            $('.day').eq(x).removeClass('selected');
-                        }
-                    } else {
-                    $('.selected').removeClass('selected')
-
-                    $(e.currentTarget).addClass('selected')
-                  
-                    for (let x = index; x < length; x ++) {
-                        $('.day').eq(x).addClass('selected');
-                    }
-                }
-                })
-                $('body').on('click','.selected', (e) => {
-                    $('.selected').removeClass('selected');
-                })
-            });
-
-            </script>";
-            END;
+        );
+        $labels = array(
+            'name' => _x('Packages', 'plural'),
+            'singular_name' => _x('Package', 'singular'),
+            'menu_name' => _x('Packages', 'admin menu'),
+            'name_admin_bar' => _x('Package', 'admin bar'),
+            'add_new' => _x('Add New Package', 'add new'),
+            'add_new_item' => __('Add New Package'),
+            'new_item' => __('New package'),
+            'edit_item' => __('Edit package'),
+            'view_item' => __('View packages'),
+            'all_items' => __('All packages'),
+            'search_items' => __('Search package'),
+            'not_found' => __('No packages found.'),
+        );
+        register_post_type(
+            'package',
+            array(
+                'labels'      => $labels,
+                'public'      => true,
+                'has_archive' => true,
+                'supports' => $supports,
+                'rewrite'     => array('slug' => 'package'),
+                'register_meta_box_cb' => array($this, 'add_package_metabox')
+            )
+        );
     }
-    public function generate_month_data($month, $dates)
+
+    public function add_package_metabox()
+    {
+        add_meta_box(
+            'start_date',
+            __('Start Dates', 'sitepoint'),
+            array($this, 'startdates_metabox')
+        );
+    }
+
+    public function startdates_metabox()
+    {
+        include $this->plugin_dir . '/menu_page.php';
+    }
+
+    public function generate_product_and_add_to_cart($room)
     {
 
-        $data = [];
+        $product = new WC_Product_Simple();
 
 
-        $monthDateObj  = DateTime::createFromFormat('Y-m-d', $dates[0]);
+        $product->set_name('Room for ' . $room['number_of_people'] . ' ' . (intval($room['number_of_people']) > 1 ? 'People' : 'Person')); // product title
 
-        $data['name'] = $monthDateObj->format('F');
+        $product->set_slug('package-name');
+
+        $product->set_regular_price($room['price']); // in current shop currency
+
+        $product->set_short_description('');
+
+        $product->save();
+
+        WC()->cart->add_to_cart($product->get_id());
+        $_SESSION['product_added'] = 'monkey';
+    }
+
+    public function generate_order()
+    {
+        $order = wc_create_order();
 
 
-        $prev_month_num_days = cal_days_in_month(CAL_GREGORIAN, intval($month) - 1, 2023);
+        $address = array(
+            'first_name' => '111Joe',
+            'last_name'  => 'Conlin',
+            'company'    => 'Speed Society',
+            'email'      => 'joe@testing.com',
+            'phone'      => '760-555-1212',
+            'address_1'  => '123 Main st.',
+            'address_2'  => '104',
+            'city'       => 'San Diego',
+            'state'      => 'Ca',
+            'postcode'   => '92121',
+            'country'    => 'US'
+        );
 
-        $num_days = cal_days_in_month(CAL_GREGORIAN, $month, 2023);
+        $order->set_address($address, 'billing');
+        $order->set_total($_POST['total']);
+    }
 
-        $lastDayPrevMonthObj = DateTime::createFromFormat('Y-m-d', '2023-' . strval(intval($month) - 1) . '-' . $prev_month_num_days);
 
-        $firstDayDateObj  = DateTime::createFromFormat('Y-m-d', '2023-' . $month . '-01');
+    public function order_complete_shortcode()
+    {
+    }
+    public function generate_wspay_signature()
+    {
+        session_start();
+        $_SESSION['ShopID'] = "PERFTRAV";
 
-        $lastDayDateObj  = DateTime::createFromFormat('Y-m-d', '2023-' . $month . '-' . $num_days);
+        $SecretKey = "b71a3ec4e5e94S";
+        $ShoppingCartID = time();
+        $Amount = $_POST['amount'];
 
-        $number_of_additional_days =  (intval($firstDayDateObj->format('w')) == 0) ? 6 : intval($firstDayDateObj->format('w')) - 1;
+        $_SESSION['Amount']  = $Amount;
+        $_SESSION['ShoppingCartID']  =  $ShoppingCartID;
+        $_SESSION['Signature'] = hash("sha512", $_SESSION['ShopID'] . $SecretKey . $ShoppingCartID . $SecretKey . $Amount . $SecretKey);
 
-        $lastDayPrevMonth = intval($lastDayPrevMonthObj->format('d'));
-        $lastDayDate =  intval($lastDayDateObj->format('w'));
-
-        $data['days'] = [];
-
-        for ($i = 0; $i < $number_of_additional_days; $i++) {
-            $data['days'][] = array('class' => 'grey', 'number' =>  $lastDayPrevMonth - ($number_of_additional_days - $i));
+        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+            $cart_item['data']->delete();
         }
 
+        setcookie("order_details", $_POST['dates'], time() + 3600);
 
-        for ($i = 0; $i < $num_days; $i++) {
-            $dayDateObj  = DateTime::createFromFormat('Y-m-j', '2023-' . $month . '-' . $i);
+        WC()->cart->empty_cart();
 
-            $daydate = $dayDateObj->format('Y-m-d');
-
-            $active = false;
-
-            if (in_array($daydate, $dates)) {
-                $active = true;
-            }
-
-            $data['days'][] = array('class' => ($active ? 'active' : 'false'), 'number' => strval($i + 1));
-        }
-
-        for ($i = 0; $i < (7 - $lastDayDate); $i++) {
-            $data['days'][] = array('class' =>  'grey', 'number' => strval($i + 1));
+        foreach ($_POST['rooms'] as $room) {
+            $this->generate_product_and_add_to_cart($room);
         }
 
 
-        return $data;
-    }
+        echo json_encode(array('Signature' => hash("sha512", $ShopID . $SecretKey . $ShoppingCartID . $SecretKey . $Amount . $SecretKey), 'ShoppingCardID' => $ShoppingCartID));
 
-    public function generate_styles()
-    {
-?>
-
-        <style>
-            .month {
-                width: 300px;
-                float: left;
-                margin-right: 20px;
-                border: 1px solid #CCC;
-            }
-
-            header {
-                text-align: center;
-                padding: 8px;
-                background: #f5f5f5;
-                font-size: 13px;
-            }
-
-            .day-names>div {
-                width: 14.28%;
-                float: left;
-                text-align: center;
-            }
-
-            .day {
-                width: 14.28%;
-                float: left;
-                text-align: center;
-                height: 30px;
-            }
-
-            .grey {
-                background: #f7f7f7;
-            }
-
-            .false {
-                background: #ffc0bd;
-            }
-
-            .active {
-                background: #d3ffd0;
-                cursor: pointer;
-            }
-
-            .hover {
-                background: blue;
-            }
-
-            .selected {
-                background: red;
-                cursor: pointer;
-            }
-        </style>
-<?php
-    }
-    public function generate_script()
-    {
+        die();
     }
 }
 
