@@ -1,0 +1,27 @@
+<div class="poa-booking">
+ <?php echo $this->runChild('components.calendar'); ?>
+ <div class="form">
+ <div class="fields">
+ <div class="input">
+ <label>Dates From To</label>
+ <p class="dates-from-to"></p>
+ </div>
+
+ <?php $__currentLoopData = $selects; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $index => $select): $loop = $this->incrementLoopIndices();  ?>
+ <?php  $this->startComponent('components.select', array('index' => $index, 'select' => $select)); ?>
+ <?php echo $this->renderComponent(); ?>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </div>
+ <div class="total">
+ <h1>Total €<span class="total-amount">0.00</span></h1>
+ </div>
+
+ <form name="pay" action="/placanje/" method="POST">
+ <input type="submit" value="Continue to checkout">
+
+ </form>
+
+ </div>
+
+</div>

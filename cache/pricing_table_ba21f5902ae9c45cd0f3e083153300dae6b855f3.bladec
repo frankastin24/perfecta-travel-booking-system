@@ -1,0 +1,55 @@
+<div class="table-responsive">
+ <table style="width:100%;">
+ <tbody>
+ <tr>
+ <td>Departure dates</td>
+ <?php $__currentLoopData = $prices; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $price): $loop = $this->incrementLoopIndices();  ?>
+ <td>
+ <?php $__currentLoopData = $price['months']; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $month): $loop = $this->incrementLoopIndices();  ?>
+
+ <?php $__currentLoopData = $month; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $start_date): $loop = $this->incrementLoopIndices();  ?>
+ <?php if(isset( $start_date->month)): ?>
+ <?php echo \htmlentities($start_date->month??'', ENT_QUOTES, 'UTF-8', false); ?>
+
+ <?php endif; ?>
+ <?php echo \htmlentities($start_date->day??'', ENT_QUOTES, 'UTF-8', false); ?>,
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </td>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </tr>
+ <tr>
+ <td>UPPER / MAIN DECK</td>
+ <?php $__currentLoopData = $prices; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $price): $loop = $this->incrementLoopIndices();  ?>
+ <td>
+ <?php echo \htmlentities($price['price_upper']??'', ENT_QUOTES, 'UTF-8', false); ?>
+
+ </td>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </tr>
+ <tr>
+ <td>LOWER DECK</td>
+ <?php $__currentLoopData = $prices; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $price): $loop = $this->incrementLoopIndices();  ?>
+ <td>
+ <?php echo \htmlentities($price['price_lower']??'', ENT_QUOTES, 'UTF-8', false); ?>
+
+ </td>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </tr>
+ <tr>
+ <td>Single cabin use supplement</td>
+ <?php $__currentLoopData = $prices; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $price): $loop = $this->incrementLoopIndices();  ?>
+ <td>50%</td>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </tr>
+
+ </tbody>
+ </table>
+</div>

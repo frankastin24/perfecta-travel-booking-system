@@ -1,4 +1,4 @@
-*,
+/* *,
 ul,
 li,
 div {
@@ -6,11 +6,14 @@ div {
   list-style-type: none;
   padding: 0px;
   margin: 0px;
-}
+} */
 .poa-booking {
   width: 1000px;
 }
-
+.woocommerce-checkout header {
+	position:relative;
+	margin-top:20px;
+}
 .fields:after {
   content: "";
   clear: both;
@@ -63,7 +66,7 @@ div {
   color: #979797;
 }
 
-header {
+.details-wrapper header {
   width: 100%;
   background: #fff;
   height: 41px;
@@ -81,7 +84,7 @@ header {
   position: relative;
 }
 
-header button {
+.details-wrapper header button {
   position: absolute;
   display: block;
   top: 22px;
@@ -101,12 +104,12 @@ header button {
   padding: 0px;
 }
 
-header button.next {
+.details-wrapper header button.next {
   right: 6px;
   left: auto;
 }
 
-header button.prev div {
+.details-wrapper header button.prev div {
   left: 10px;
   margin-left: -4px;
   border-width: 5px 8.7px 5px 0;
@@ -118,7 +121,7 @@ header button.prev div {
   top: 6px;
 }
 
-header button.next div {
+.details-wrapper header button.next div {
   right: 25px;
   margin-right: -34px;
   border-width: 5px 0 5px 8.7px;
@@ -142,7 +145,7 @@ header button.next div {
   float: left;
   text-align: center;
   height: 39px;
-  padding: 13px 0px;
+  padding: 6px 0px;
   font-size: 13px;
   border: 1px solid #fff;
 }
@@ -170,13 +173,16 @@ header button.next div {
   cursor: pointer;
 }
 .fields > div {
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .fields > div:nth-child(even) {
   float: right;
 }
-label {
+.fields > div:nth-child(odd) {
+  clear: both;
+}
+.details-wrapper label {
   font-weight: bold;
   font-size: 15px;
   width: 100%;
@@ -219,7 +225,7 @@ label {
   top: 1px;
 }
 
-ul {
+ ul {
   background: #fff;
   position: absolute;
   width: 100%;
@@ -229,12 +235,12 @@ ul {
 .active ul {
   display: block;
 }
-li {
+ li {
   padding: 10px 20px;
   cursor: pointer;
   width: 100%;
 }
-li:hover,
+ li:hover,
 li.selected {
   background: #ccc;
 }
@@ -248,8 +254,14 @@ li.selected {
   width: 90% !important;
 }
 
+.woocommerce-checkout {
+  padding-bottom: 105px;
+}
+
 .select button,
-input[type="text"],
+ input[type="text"],
+ input[type="email"],
+ input[type="tel"],
 .select2-selection__rendered,
 .input p {
   width: 100% !important;
@@ -257,7 +269,7 @@ input[type="text"],
   width: 100% !important;
   border: 1px solid #ccc !important;
   background: #fff !important;
-  padding: 16px 8px !important;
+  padding: 11px 15px !important;
   outline: none !important;
   background-color: #ffffff !important;
   font-size: 17px !important;
@@ -280,9 +292,9 @@ input[type="text"],
 
 #ws-payment-form input[type="submit"] {
   position: absolute;
-  top: 1329px;
-  width: calc(50% - 293px);
-  left: calc(50% + 28px);
+  top: 494px;
+  width: calc(50% - 302px);
+  left: calc(50% + 0px);
 }
 
 #place_order {
@@ -298,8 +310,7 @@ input[type="text"],
 .total h1 {
   font-size: 30px;
 }
-
-input[type="submit"] {
+ input[type="submit"] {
   display: inline-block;
   padding: 15px 10px;
   font-weight: 300;
@@ -315,7 +326,7 @@ input[type="submit"] {
   cursor: pointer;
 }
 
-input[type="submit"]:hover {
+ input[type="submit"]:hover {
   background: #005f9d;
   color: #fff;
 }
@@ -338,6 +349,11 @@ input[type="submit"]:hover {
 
 #order_review {
   float: left;
-  width: 34%;
+  width: 48%;
   margin-top: 22px;
+}
+ form[name="checkout"]:after {
+  content: "";
+  clear: both;
+  display: block;
 }

@@ -1,0 +1,14 @@
+<div class="select">
+ <label><?php echo \htmlentities($select['title']??'', ENT_QUOTES, 'UTF-8', false); ?></label>
+ <input name="<?php echo \htmlentities($select['name']??'', ENT_QUOTES, 'UTF-8', false); ?>" type="hidden" />
+ <button><span></span></button>
+ <ul class="options">
+ <?php $__currentLoopData = $select['options']; $this->addLoop($__currentLoopData);$this->getFirstLoop();
+ foreach($__currentLoopData as $value => $option): $loop = $this->incrementLoopIndices();  ?>
+ <li data-value="<?php echo \htmlentities($value??'', ENT_QUOTES, 'UTF-8', false); ?>"><?php echo \htmlentities($option??'', ENT_QUOTES, 'UTF-8', false); ?></li>
+ <?php endforeach; $this->popLoop(); $loop = $this->getFirstLoop(); ?>
+ </ul>
+ <?php if(isset($select['validation-message'])): ?>
+ <p class="validation-error-message"><?php echo \htmlentities($select['validation-message']??'', ENT_QUOTES, 'UTF-8', false); ?></p>
+ <?php endif; ?>
+</div>

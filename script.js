@@ -47,10 +47,13 @@ const generateCalendar = (index, first, last) => {
     '<div class="calendar-body"><div class="day day-name">M</div><div class="day day-name">T</div><div class="day day-name">W</div><div class="day day-name">T</div><div class="day day-name">F</div><div class="day day-name">S</div><div class="day day-name">S</div>';
 
   month.days.forEach((day) => {
-    if (day.class == "active") {
+    if (day.class == "active month-day") {
       calendarHTML +=
         '<div data-date="' +
         day.date +
+        '" ' +
+        'data-enddate="' +
+        day.enddate +
         '" ' +
         'data-duration="' +
         day.duration +
@@ -120,14 +123,11 @@ const calculatePrice = () => {
       roomobj.price = basePrice * 1.5;
       fullPrice += basePrice * 1.5;
     }
-    if (value == 2) {
-      roomobj.price = basePrice;
-      fullPrice += basePrice;
-    }
-    if (value > 2) {
-      roomobj.price = basePrice * (parseInt($(el).find("input").val()) - 2);
-      fullPrice +=
-        basePrice + basePrice * (parseInt($(el).find("input").val()) - 2);
+
+    if (value > 1) {
+      roomobj.price =
+        basePrice * parseInt($(el).find("input").val());
+      fullPrice +=  basePrice * parseInt($(el).find("input").val());
     }
 
     roomObjs.push(roomobj);
@@ -181,22 +181,31 @@ const generateCalendars = (index) => {
 $ = jQuery;
 let isSubmit = false;
 let currentCalendar = 0;
-$(() => {
-  console.log(typeof PoaData);
-  if (typeof PoaData == "undefined") {
-  } else {
-    generateCalendars(0);
-  }
+$(window).on("resize", () => {
+  if ($(".place-order").length > 0) {
+    const ws_pay_btn_top =
+      $(".place-order").offset().top + $(".place-order").height() ;
 
-  $('input[type="submit"]').on("click", (e) => {
+    $('#ws-payment-form input[type="submit"]').css({
+      top: ws_pay_btn_top + "px",
+      width: $(".place-order").outerWidth() + "px",
+    });
+  }
+});
+$(() => {
+  $('a[href="#book"]').on("click", () => {
+    const booking_top = $(".poa-booking").offset().top;
+    window.scrollTo(0, booking_top - 150);
+  });
+  $('form input[type="submit"]').on("click", (e) => {
     const valid = validate(true);
     calculatePrice();
-    if (!valid) {
+    if (!valid && typeof PoaData != "undefined") {
       e.preventDefault();
       return;
     }
 
-    if (!isSubmit) {
+    if (!isSubmit && typeof PoaData != "undefined") {
       e.preventDefault();
       $.ajax({
         type: "POST",
@@ -206,43 +215,132 @@ $(() => {
           action: "generate_wspay_signature",
           amount: $(".total-amount").html(),
           rooms: roomObjs,
+          cruise: $("#trip-name").html(),
           dates: $(".dates-from-to").html(),
         },
 
         beforeSend: function () {},
         success: function (data) {
-          $('input[name="Signature"]').val(data.Signature);
-          $('input[name="ShoppingCartID"]').val(data.ShoppingCardID);
-          $('input[name="TotalAmount"]').val($(".total-amount").html());
           isSubmit = true;
-          $("form").submit();
+          $(".poa-booking form").submit();
         },
       });
     }
   });
+  if ($(".place-order").length > 0) {
+    const ws_pay_btn_top =
+      $(".place-order").offset().top + $(".place-order").height() + 30;
+
+    $('#ws-payment-form input[type="submit"]').css({
+      top: ws_pay_btn_top + "px",
+      width: $(".place-order").outerWidth() + "px",
+    });
+  }
+
+  $('#ws-payment-form input[type="submit"]').on("click", (e) => {
+    let isValid = true;
+    e.preventDefault();
+
+    if (!isSubmit) {
+      $(".woocommerce-billing-fields__field-wrapper  input").each(
+        (index, el) => {
+          console.log(el);
+          if ($(el).val().trim() == "") {
+            console.log($(el).attr("name"));
+            if ($(el).attr("name") == "CustomerCountry") {
+              $(el).val("Croatia");
+            } else {
+              isValid = false;
+            }
+          }
+        }
+      );
+
+      if (!isValid) {
+        alert("Please fill in all of the required fields");
+      } else {
+        $('input[name="CustomerFirstName"]').val(
+          $('input[name="billing_first_name"]').val()
+        );
+        $('input[name="CustomerLastName"]').val(
+          $('input[name="billing_last_name"]').val()
+        );
+        $('input[name="CustomerEmail"]').val(
+          $('input[name="billing_email"]').val()
+        );
+      }
+      isSubmit = true;
+      $("#ws-payment-form").submit();
+    }
+  });
+  if (typeof PoaData == "undefined") {
+  } else {
+    generateCalendars(0);
+  }
 
   $("body").on("change", "select", (e) => {
     const index = $(e.currentTarget).find(":selected").index();
     currentCalendar = index;
     generateCalendars(index);
   });
+
   $("body").on("click", ".prev", (e) => {
     currentCalendar--;
     generateCalendars(currentCalendar);
   });
+
   $("body").on("click", ".next", (e) => {
     currentCalendar++;
     generateCalendars(currentCalendar);
   });
+
   $("body").on("mouseover", ".day.active", (e) => {
     const index = $(e.currentTarget).index();
 
     $(e.currentTarget).addClass("hover");
 
-    const length = index + (parseInt($(e.currentTarget).data("duration")) + 1);
+    const duration = parseInt($(e.currentTarget).data("duration"));
 
-    for (let x = index; x < length; x++) {
-      $(e.currentTarget).siblings(".day").eq(x).addClass("hover");
+    const length = index + duration;
+
+    const firstDayOfMonthIndex = $(".month-day").eq(0).index();
+
+    const number_of_days_in_month = $(e.currentTarget)
+      .parent()
+      .find(".month-day").length;
+
+    if (duration + (index - firstDayOfMonthIndex) > number_of_days_in_month) {
+      var length1 =
+        duration - (number_of_days_in_month - (index - firstDayOfMonthIndex));
+
+      for (
+        let x = index;
+        x < firstDayOfMonthIndex + number_of_days_in_month + 1;
+        x++
+      ) {
+        $(e.currentTarget).siblings(".day").eq(x).addClass("hover");
+      }
+      const firstDayOfNextMonthIndex = $(e.currentTarget)
+        .parent()
+        .parent()
+        .next()
+        .find(".month-day")
+        .eq(0)
+        .index();
+
+      for (let x = 0; x < length1 + 1; x++) {
+        $(e.currentTarget)
+          .parent()
+          .parent()
+          .next()
+          .find(".month-day")
+          .eq(x)
+          .addClass("hover");
+      }
+    } else {
+      for (let x = index; x < length; x++) {
+        $(e.currentTarget).siblings(".day").eq(x).addClass("hover");
+      }
     }
   });
   $("body").on("mouseout", ".active", (e) => {
@@ -295,8 +393,11 @@ $(() => {
     $(".total-amount").html("0.00");
 
     $(".select .selected").removeClass("selected");
+
     $(".select button").html("<span>");
+
     $(".calendar-validation-error").hide();
+
     const room_selects = $(".select").filter((index, el) => {
       return (
         $(el).find("input").attr("name").indexOf("room") > -1 &&
@@ -306,12 +407,18 @@ $(() => {
 
     room_selects.remove();
 
-    const length = index + (parseInt($(e.currentTarget).data("duration")) + 1);
+    const duration = parseInt($(e.currentTarget).data("duration"));
+
+    const length = index + duration;
+
+    const firstDayOfMonthIndex = $(".month-day").eq(0).index();
+
+    const number_of_days_in_month = $(e.currentTarget)
+      .parent()
+      .find(".month-day").length;
+
     if ($(e.currentTarget).hasClass("selected")) {
-      $(e.currentTarget).removeClass("selected");
-      for (let x = index; x < length; x++) {
-        $(".day").eq(x).removeClass("selected");
-      }
+      $(".selected").removeClass("selected");
 
       $(".dates-from-to").html("");
     } else {
@@ -328,11 +435,13 @@ $(() => {
       const people_per_room = parseInt(
         $(e.currentTarget).data("people_per_room")
       );
+
       let prevRoom = false;
+
       for (let x = 0; x < num_rooms; x++) {
         let room_html = "";
         room_html += `<div class="select" style="display: none;">
-          <label>Room ${x + 1}</label>
+          <label>Cabin ${x + 1}</label>
           <input name="room_${x + 1}" type="hidden" value="">
           <button><span></span></button>
           <ul class="options">`;
@@ -343,7 +452,7 @@ $(() => {
             (y + 1) +
             '">' +
             (y + 1) +
-            (y == 0 ? " Person" : " People") +
+            (y == 0 ? " Person" : " Persons") +
             "</li>";
         }
 
@@ -367,17 +476,43 @@ $(() => {
 
       $('input[name="num_rooms"]').siblings("ul").html(num_rooms_html);
 
-      dates +=
-        " " +
-        $(e.currentTarget)
-          .siblings(".day")
-          .eq(length - 1)
-          .data("date");
+      dates += " " + $(e.currentTarget).data("enddate");
 
       $(".dates-from-to").html(dates);
       calculatePrice();
-      for (let x = index; x < length; x++) {
-        $(e.currentTarget).siblings(".day").eq(x).addClass("selected");
+
+      if (duration + (index - firstDayOfMonthIndex) > number_of_days_in_month) {
+        var length1 =
+          duration - (number_of_days_in_month - (index - firstDayOfMonthIndex));
+
+        for (
+          let x = index;
+          x < firstDayOfMonthIndex + number_of_days_in_month + 1;
+          x++
+        ) {
+          $(e.currentTarget).siblings(".day").eq(x).addClass("selected");
+        }
+        const firstDayOfNextMonthIndex = $(e.currentTarget)
+          .parent()
+          .parent()
+          .next()
+          .find(".month-day")
+          .eq(0)
+          .index();
+
+        for (let x = 0; x < length1 + 1; x++) {
+          $(e.currentTarget)
+            .parent()
+            .parent()
+            .next()
+            .find(".month-day")
+            .eq(x)
+            .addClass("selected");
+        }
+      } else {
+        for (let x = index; x < length; x++) {
+          $(e.currentTarget).siblings(".day").eq(x).addClass("selected");
+        }
       }
     }
   });
@@ -388,8 +523,42 @@ $(() => {
 
   if (window.location.href.split("?")[1]) {
     setTimeout(() => {
+      const vars = window.location.href.split("?")[1].split("&");
+      vars.forEach((vars) => {
+        const name = vars.split("=")[0];
+        const value = decodeURI(vars.split("=")[1]);
+
+        switch (name) {
+          case "CustomerFirstname":
+            console.log($('input[name="billing_first_name"]'));
+            $('input[name="billing_first_name"]').val(value);
+            break;
+          case "CustomerSurname":
+            console.log($('input[name="billing_first_name"]'));
+
+            $('input[name="billing_last_name"]').val(value);
+            break;
+          case "CustomerEmail":
+            $('input[name="billing_email"]').val(value);
+            break;
+          case "CustomerAddress":
+            $('input[name="billing_address_1"]').val(value);
+            break;
+          case "CustomerPhone":
+            break;
+          case "CustomerCity":
+            $('input[name="billing_city"]').val(value);
+            break;
+          case "CustomerZIP":
+            $('input[name="billing_postcode"]').val(value);
+            break;
+          case "CustomerCountry":
+            $('input[name="billing_country"]').val("Croatia");
+            break;
+        }
+      });
+
       $("#place_order").click();
-      console.log("here");
     }, 1000);
   }
 });

@@ -16,11 +16,11 @@
             <h1>Total €<span class="total-amount">0.00</span></h1>
         </div>
 
-        <form name="pay" action="/checkout" method="POST">
-            <input type="submit" value="Contiue to checkout">
+        <form name="pay" action="/placanje/" method="POST">
+            <input type="submit" value="Continue to checkout">
 
         </form>
 
     </div>
-</div>
+
 </div>
