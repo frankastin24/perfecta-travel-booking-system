@@ -48,8 +48,6 @@ class POA_Booking
         $this->plugin_dir = plugin_dir_path(__FILE__);
         $this->plugin_dir_url = plugin_dir_url(__FILE__);
 
-
-
         //Get Start dates
 
         $this->calendar_data = array();
@@ -69,8 +67,6 @@ class POA_Booking
         );
         $package = get_posts($args);
 
-
-
         if (
             !$package
         ) {
@@ -80,8 +76,6 @@ class POA_Booking
         }
 
         add_shortcode('poa_booking', array($this, 'calendar_form_shortcode'));
-
-
 
         add_shortcode('poa_pricing', array($this, 'pricing_table_shortcode'));
 
@@ -127,7 +121,7 @@ class POA_Booking
             <b><?= get_post_meta($order->ID, 'Dates')[0] ?> to <?= get_post_meta($order->ID, 'Dates')[1] ?></b>
             <!--/email_off-->
         </p>
-<?php
+    <?php
 
 
         // Or the older way (using always the item Id)
@@ -214,6 +208,8 @@ class POA_Booking
 
 
         if ($post->post_type == 'package' && isset($_POST['json_data'])) {
+
+            update_post_meta($post_id, 'package_type', $_POST['package_type']);
             update_post_meta($post_id, 'start_dates', json_decode(stripslashes_deep($_POST['json_data'])));
         }
     }
@@ -255,10 +251,28 @@ class POA_Booking
     public function add_package_metabox()
     {
         add_meta_box(
+            'package_type',
+            __('Package Type', 'sitepoint'),
+            array($this, 'package_type_metabox')
+        );
+        add_meta_box(
             'start_date',
             __('Start Dates', 'sitepoint'),
             array($this, 'startdates_metabox')
         );
+    }
+
+    public function package_type_metabox()
+    {
+        global $post;
+        $package_type = !empty(get_post_meta($post->ID, 'package_type', true)) ? get_post_meta($post->ID, 'package_type', true) : 'cruise';
+    ?>
+        <label>Package Type</label>
+        <select name="package_type">
+            <option <?= $package_type == 'cruise' ? 'selected' : '' ?> value="cruise">Cruise</option>
+            <option <?= $package_type == 'ordinary' ? 'selected' : '' ?> value="ordinary">Ordinary Accomodation</option>
+        </select>
+<?php
     }
 
     public function startdates_metabox()

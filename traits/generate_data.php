@@ -18,7 +18,7 @@ trait generate_data
             ),
             array(
                 'name' => 'num_rooms',
-                'title' => 'Number Of Cabins',
+                'title' => 'Number Of Rooms',
                 'options' => array(),
                 'validation-message' => 'You must select a number of rooms.'
             ),
@@ -34,8 +34,6 @@ trait generate_data
 
         foreach ($this->start_dates as $start_date_array) {
 
-
-
             $monthDateObj  = DateTime::createFromFormat('Y-m-d', $start_date_array->start_date);
 
             $month_name = $monthDateObj->format('F');
@@ -43,30 +41,51 @@ trait generate_data
             $month  = $monthDateObj->format('m');
             $day  = $monthDateObj->format('d');
 
+            if (isset($start_date_array->price_per_person)) {
+                if (!$start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]) {
+
+                    $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement] = array();
+                    $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['price_per_person'] = $start_date_array->price_per_person;
+                    $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['single_person_supplement'] = $start_date_array->single_person_supplement;
+                    $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['months'] = array();
+                }
+
+                if (!$start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['months'][$month]) {
 
 
+                    $start_date_array->month = $month_name;
 
-            if (!$start_dates_by_price[$start_date_array->price_upper]) {
+                    $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['months'][$month] = array();
+                }
 
-                $start_dates_by_price[$start_date_array->price_upper] = array();
-                $start_dates_by_price[$start_date_array->price_upper]['price_upper'] = $start_date_array->price_upper;
-                $start_dates_by_price[$start_date_array->price_upper]['price_lower'] = $start_date_array->price_lower;
-                $start_dates_by_price[$start_date_array->price_upper]['months'] = array();
+                $start_date_array->day =  $day;
+
+                $start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['months'][$month][] = $start_date_array;
+
+                ksort($start_dates_by_price[$start_date_array->price_per_person . '@' . $start_date_array->single_person_supplement]['months']);
+            } else {
+                if (!$start_dates_by_price[$start_date_array->price_upper]) {
+
+                    $start_dates_by_price[$start_date_array->price_upper] = array();
+                    $start_dates_by_price[$start_date_array->price_upper]['price_upper'] = $start_date_array->price_upper;
+                    $start_dates_by_price[$start_date_array->price_upper]['price_lower'] = $start_date_array->price_lower;
+                    $start_dates_by_price[$start_date_array->price_upper]['months'] = array();
+                }
+
+                if (!$start_dates_by_price[$start_date_array->price_upper]['months'][$month]) {
+
+
+                    $start_date_array->month = $month_name;
+
+                    $start_dates_by_price[$start_date_array->price_upper]['months'][$month] = array();
+                }
+
+                $start_date_array->day =  $day;
+
+                $start_dates_by_price[$start_date_array->price_upper]['months'][$month][] = $start_date_array;
+
+                ksort($start_dates_by_price[$start_date_array->price_upper]['months']);
             }
-
-            if (!$start_dates_by_price[$start_date_array->price_upper]['months'][$month]) {
-
-
-                $start_date_array->month = $month_name;
-
-                $start_dates_by_price[$start_date_array->price_upper]['months'][$month] = array();
-            }
-
-            $start_date_array->day =  $day;
-
-            $start_dates_by_price[$start_date_array->price_upper]['months'][$month][] = $start_date_array;
-
-            ksort($start_dates_by_price[$start_date_array->price_upper]['months']);
         }
         ksort($start_dates_by_price);
         return $start_dates_by_price;
@@ -212,8 +231,28 @@ trait generate_data
 
                 $duration = $start_date_object->diff($end_date_object)->days;
 
+                $day_array = [];
+                $day_array['enddate'] = $end_date_object->format('Y-m-d');
+                $day_array['class'] = 'active month-day';
+                $day_array['number'] = strval($i + 1);
+                $day_array['date'] = $daydate;
+                $day_array['duration'] =  $duration;
 
-                $data['days'][] = array('enddate' => $end_date_object->format('Y-m-d'), 'class' => 'active month-day', 'number' => strval($i + 1), 'date' => $daydate, 'duration' =>  $duration, 'price_upper' => $new_dates[$daydate]['price_upper'], 'price_lower' => $new_dates[$daydate]['price_lower'], 'number_rooms' => $new_dates[$daydate]['number_rooms'], 'people_per_room' => $new_dates[$daydate]['people_per_room']);
+                if (isset($new_dates[$daydate]['price_upper'])) {
+                    $day_array['price_upper'] = $new_dates[$daydate]['price_upper'];
+                    $day_array['price_lower'] = $new_dates[$daydate]['price_lower'];
+                    $this->calendar_data['package_type'] = 'cruise';
+                }
+                if (isset($new_dates[$daydate]['price_per_person'])) {
+                    $day_array['price_per_person'] = $new_dates[$daydate]['price_per_person'];
+                    $day_array['single_person_supplement'] = $new_dates[$daydate]['single_person_supplement'];
+                    $this->calendar_data['package_type'] = 'ordinary';
+                }
+                $day_array['number_rooms'] = $new_dates[$daydate]['number_rooms'];
+                $day_array['people_per_room'] = $new_dates[$daydate]['people_per_room'];
+
+
+                $data['days'][] =  $day_array;
             } else {
 
 

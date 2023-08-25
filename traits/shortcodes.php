@@ -4,6 +4,7 @@ trait shortcodes
     public function calendar_form_shortcode()
     {
         if ($this->start_dates) {
+
             $this->calendar_data['months'] = $this->generate_months_data();
 
             wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Mulish:wght@400;500&display=swap');
@@ -51,6 +52,7 @@ trait shortcodes
 
         $ws_pay = array($_SESSION['ShopID'], $_SESSION['ShoppingCartID'], $_SESSION['Amount'], $_SESSION['Signature']);
         global $blade;
+
         echo $blade->run('details_form', array('site_url' => site_url(), 'address' => $address, 'ws_pay' => $ws_pay));
     }
     public function order_complete()

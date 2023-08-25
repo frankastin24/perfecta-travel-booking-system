@@ -197,7 +197,6 @@ div {
 }
 .input,
 .select {
-  margin-top: 20px;
   width: 49%;
   float: left;
   position: relative;
@@ -225,22 +224,23 @@ div {
   top: 1px;
 }
 
- ul {
+.poa-booking  ul {
   background: #fff;
   position: absolute;
   width: 100%;
   z-index: 10;
   display: none;
+  box-shadow: 0 12px 19px 4px rgba(0,0,0,.03);
 }
 .active ul {
   display: block;
 }
- li {
+.poa-booking  li {
   padding: 10px 20px;
   cursor: pointer;
   width: 100%;
 }
- li:hover,
+.poa-booking  li:hover,
 li.selected {
   background: #ccc;
 }
@@ -249,13 +249,9 @@ li.selected {
   display: block;
 }
 
-.woocommerce .col2-set .col-1,
-.woocommerce-page .col2-set .col-1 {
-  width: 90% !important;
-}
 
 .woocommerce-checkout {
-  padding-bottom: 105px;
+  padding-bottom: 5rem;
 }
 
 .select button,
@@ -291,39 +287,48 @@ li.selected {
 }
 
 #ws-payment-form input[type="submit"] {
-  position: absolute;
-  top: 494px;
-  width: calc(50% - 302px);
-  left: calc(50% + 0px);
-}
+	/* position: absolute;
+	top: 574px;
+	width: auto;
+	left: calc(50% + 0px); */
 
+}
+#ws-payment-form{
+  display: flex;
+  justify-content: flex-end;
+}
 #place_order {
   display: none;
 }
 
 .total {
-  padding: 30px 20px;
+  padding: 2rem;
   background: #f0f0f0;
   margin-top: 20px;
+
+  
 }
 
 .total h1 {
-  font-size: 30px;
+  font-size: 2rem;
+  margin-bottom: 0;
 }
  input[type="submit"] {
   display: inline-block;
-  padding: 15px 10px;
+  padding: 1rem 2.6rem;
   font-weight: 300;
   text-transform: uppercase;
   border: 2px solid #005f9d;
+ 
   background-color: transparent;
-  border-radius: 10px;
-  font-size: 17px;
+  border-radius: 1rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #005f9d;
-  transition: all 0.4s ease-in-out;
-  margin-top: 20px;
-  cursor: pointer;
+  border-radius: 0;
+  display: inline-block;
+  width: auto;
+  margin-top: 3rem;
 }
 
  input[type="submit"]:hover {
@@ -335,21 +340,18 @@ li.selected {
   display: none;
 }
 
-.woocommerce .col2-set,
-.woocommerce-page .col2-set {
-  width: 50%;
-  float: left;
-}
+
 #order_review_heading {
-  width: 50%;
+  width: 100%;
   float: left;
   font-size: 20px;
   font-weight: bold;
+  margin-top: 5rem;
 }
 
 #order_review {
   float: left;
-  width: 48%;
+  width: 100%;
   margin-top: 22px;
 }
  form[name="checkout"]:after {
@@ -357,3 +359,35 @@ li.selected {
   clear: both;
   display: block;
 }
+.woocommerce-billing-fields h3{
+  font-weight: 700;
+}
+@media only screen and (max-width: 30rem) {
+  /*480px*/
+  .woocommerce form .form-row-first, .woocommerce form .form-row-last, .woocommerce-page form .form-row-first{
+    width: 100%;
+  }
+}
+
+@media only screen and (min-width: 50.0625em) {
+  /*801px*/
+  #order_review {
+
+    width: 48%;
+  }
+  #order_review_heading {
+    width: 50%;
+    margin-top: 0;
+  }
+  .woocommerce .col2-set,
+.woocommerce-page .col2-set {
+  width: 50%;
+  float: left;
+}
+.woocommerce .col2-set .col-1,
+.woocommerce-page .col2-set .col-1 {
+  width: 90% !important;
+}
+
+}
+

@@ -1,5 +1,9 @@
+let singlePerson = false;
+let basePrice = null;
 const generateSelect = (value) => {
-  let selectHTML = "<select>";
+  let selectHTML =
+    "<select><option value='null' >Please Select A Month</option>";
+
   PoaData["months"].forEach((month) => {
     selectHTML +=
       "<option " +
@@ -14,7 +18,7 @@ const generateSelect = (value) => {
   });
 
   selectHTML += "</select>";
-  return selectHTML;
+  $(".calendar-container").html(selectHTML + '<div class="months"></div>');
 };
 let roomObjs = [];
 const generateCalendar = (index, first, last) => {
@@ -35,11 +39,7 @@ const generateCalendar = (index, first, last) => {
     `<div class="poa-booking-calendar">
   <header>` + prevArrow;
 
-  if (first) {
-    calendarHTML += generateSelect(month.name);
-  } else {
-    calendarHTML += "<span>" + month.name + " " + month.year + "</span>";
-  }
+  calendarHTML += "<span>" + month.name + " " + month.year + "</span>";
 
   calendarHTML += nextArrow + "</header>";
 
@@ -60,12 +60,25 @@ const generateCalendar = (index, first, last) => {
         '" ' +
         'data-num_rooms="' +
         day.num_rooms +
-        '" ' +
-        'data-price_upper="' +
-        day.price_upper +
-        '" ' +
-        'data-price_lower="' +
-        day.price_lower +
+        '" ';
+
+      if (day.price_upper) {
+        calendarHTML +=
+          'data-price_upper="' +
+          day.price_upper +
+          '" ' +
+          'data-price_lower="' +
+          day.price_lower;
+      } else {
+        calendarHTML +=
+          'data-price_per_person="' +
+          day.price_per_person +
+          '" ' +
+          'data-single_person_supplement="' +
+          day.single_person_supplement;
+      }
+
+      calendarHTML +=
         '" ' +
         'data-number_rooms="' +
         day.number_rooms +
@@ -97,9 +110,11 @@ const generateCalendar = (index, first, last) => {
 const calculatePrice = () => {
   if (!validate()) return;
 
-  const basePrice = parseInt(
-    $(".active.selected").data($('input[name="position"]').val())
-  );
+  if (PoaData.package_type != "ordinary") {
+    basePrice = parseInt(
+      $(".active.selected").data($('input[name="position"]').val())
+    );
+  }
 
   let fullPrice = 0;
 
@@ -120,14 +135,18 @@ const calculatePrice = () => {
     let roomobj = { number_of_people: value };
 
     if (value == 1) {
-      roomobj.price = basePrice * 1.5;
-      fullPrice += basePrice * 1.5;
+      if (singlePerson) {
+        roomobj.price = basePrice + parseInt(singlePerson);
+        fullPrice += basePrice + parseInt(singlePerson);
+      } else {
+        roomobj.price = basePrice * 1.5;
+        fullPrice += basePrice * 1.5;
+      }
     }
 
     if (value > 1) {
-      roomobj.price =
-        basePrice * parseInt($(el).find("input").val());
-      fullPrice +=  basePrice * parseInt($(el).find("input").val());
+      roomobj.price = basePrice * parseInt($(el).find("input").val());
+      fullPrice += basePrice * parseInt($(el).find("input").val());
     }
 
     roomObjs.push(roomobj);
@@ -169,11 +188,27 @@ const validate = (displayErrors = false) => {
 const generateCalendars = (index) => {
   let calendarsHTML = "";
 
-  for (let x = index; x < index + 3; x++) {
-    var last = x == index + 2;
+  let numCalendars = 1;
+
+  PoaData.months[index].days.forEach((day) => {
+    if (day.class == "active month-day") {
+      if (day.enddate.split("-")[1] != day.date.split("-")[1]) {
+        numCalendars = 2;
+      }
+    }
+  });
+
+  for (let x = index; x < index + numCalendars; x++) {
+    var last = x == index + 1;
 
     calendarsHTML += generateCalendar(x, x == index, last);
   }
+
+  $(".calendar-container .months").html(calendarsHTML);
+};
+
+const removeCalendars = (index) => {
+  let calendarsHTML = "";
 
   $(".calendar-container").html(calendarsHTML);
 };
@@ -184,7 +219,7 @@ let currentCalendar = 0;
 $(window).on("resize", () => {
   if ($(".place-order").length > 0) {
     const ws_pay_btn_top =
-      $(".place-order").offset().top + $(".place-order").height() ;
+      $(".place-order").offset().top + $(".place-order").height();
 
     $('#ws-payment-form input[type="submit"]').css({
       top: ws_pay_btn_top + "px",
@@ -193,6 +228,9 @@ $(window).on("resize", () => {
   }
 });
 $(() => {
+  if (PoaData.package_type == "ordinary") {
+    $(".select").eq(0).remove();
+  }
   $('a[href="#book"]').on("click", () => {
     const booking_top = $(".poa-booking").offset().top;
     window.scrollTo(0, booking_top - 150);
@@ -275,13 +313,18 @@ $(() => {
   });
   if (typeof PoaData == "undefined") {
   } else {
-    generateCalendars(0);
+    generateSelect(null);
   }
 
   $("body").on("change", "select", (e) => {
     const index = $(e.currentTarget).find(":selected").index();
     currentCalendar = index;
-    generateCalendars(index);
+
+    if (index == 0) {
+      removeCalendars();
+    } else {
+      generateCalendars(index - 1);
+    }
   });
 
   $("body").on("click", ".prev", (e) => {
@@ -315,11 +358,13 @@ $(() => {
 
       for (
         let x = index;
-        x < firstDayOfMonthIndex + number_of_days_in_month + 1;
+        x <
+        index + (number_of_days_in_month - (index - firstDayOfMonthIndex)) - 1;
         x++
       ) {
         $(e.currentTarget).siblings(".day").eq(x).addClass("hover");
       }
+
       const firstDayOfNextMonthIndex = $(e.currentTarget)
         .parent()
         .parent()
@@ -398,6 +443,9 @@ $(() => {
 
     $(".calendar-validation-error").hide();
 
+    basePrice = $(e.currentTarget).data("price_per_person");
+    singlePerson = $(e.currentTarget).data("single_person_supplement");
+
     const room_selects = $(".select").filter((index, el) => {
       return (
         $(el).find("input").attr("name").indexOf("room") > -1 &&
@@ -441,7 +489,7 @@ $(() => {
       for (let x = 0; x < num_rooms; x++) {
         let room_html = "";
         room_html += `<div class="select" style="display: none;">
-          <label>Cabin ${x + 1}</label>
+          <label>Room ${x + 1}</label>
           <input name="room_${x + 1}" type="hidden" value="">
           <button><span></span></button>
           <ul class="options">`;
@@ -487,7 +535,10 @@ $(() => {
 
         for (
           let x = index;
-          x < firstDayOfMonthIndex + number_of_days_in_month + 1;
+          x <
+          index +
+            (number_of_days_in_month - (index - firstDayOfMonthIndex)) -
+            1;
           x++
         ) {
           $(e.currentTarget).siblings(".day").eq(x).addClass("selected");
