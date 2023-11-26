@@ -210,7 +210,7 @@ const generateCalendars = (index) => {
 const removeCalendars = (index) => {
   let calendarsHTML = "";
 
-  $(".calendar-container").html(calendarsHTML);
+  $(".calendar-container .months").html(calendarsHTML);
 };
 
 $ = jQuery;
