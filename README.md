@@ -1,3 +1,3 @@
 # Perfect Travel Booking System
 
-A WordPress booking system plugin with woocommerce integration.
+A WordPress booking system plugin with WooCommerce integration.
